@@ -1,0 +1,52 @@
+html, body{
+    box-sizing: border-box;
+    margin: 0;
+    border: 0;
+    width: 100%;
+    height: 100%;
+}
+.active-panel-container{
+    width: 95vw;
+    height: 95vh;
+    background-color: unset;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.active-panel{
+    width: 70%;
+    height: 75%;
+    background-color: rgb(144, 144, 144);
+    display: flex;
+    position: relative;
+    z-index: 5;
+}
+.circle, .sticker{
+    background-color: unset;
+    height: 10%;
+    aspect-ratio: 1;
+    position: absolute;
+    border-radius: 50%;
+}
+.circle{
+    border: 3px solid black;
+    z-index: 10;
+}
+.sticker{
+    z-index: 20;
+}
+@media only screen and (max-width: 600px) {
+    .circle, .sticker{
+        height: 5%;
+    }
+}
+.draggable {
+    position: absolute;
+    cursor: grab;
+    user-select: none;
+}
+
+.draggable.dragging {
+    cursor: grabbing;
+}
