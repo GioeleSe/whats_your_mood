@@ -1,0 +1,70 @@
+html, body {
+    box-sizing: border-box;
+    margin: 0;
+    border: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.active-panel-container {
+    width: 95vw;
+    height: 95vh;
+    background-color: unset;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.active-panel {
+    width: 70%;
+    height: 75%;
+    background-color: rgb(144, 144, 144);
+    display: flex;
+    position: relative;
+    border-radius: 30px;
+    z-index: 5;
+}
+
+.circle, .sticker {
+    background-color: unset;
+    position: absolute;
+    border-radius: 50%;
+    height: 10%;
+}
+
+.circle {
+    border: 3px solid black;
+    z-index: 10;
+}
+
+#sticker {
+    z-index: 20;
+}
+
+@media only screen and (max-width: 600px) {
+    .circle, .sticker {
+        height: 5%;
+    }
+}
+
+.draggable {
+    position: absolute;
+    cursor: grab;
+    user-select: none;
+}
+
+.draggable.dragging {
+    cursor: grabbing;
+}
+
+.sticky-footer {
+    position: sticky;
+    bottom: 0;
+    background-color: #333; /* Footer background color */
+    color: white; /* Text color */
+    text-align: center; /* Center the text */
+    padding: 10px 0; /* Padding for the footer */
+    height: 60px; /* Fixed height for the footer */
+}
