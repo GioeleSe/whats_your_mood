@@ -7,9 +7,20 @@ html, body {
     overflow: hidden;
 }
 
+.content{
+    padding: 1%;
+    min-height: 100%;
+}
+.header{
+    min-height: 10vh;
+    background-color: rgb(144, 144, 144);
+    text-align: center;
+    padding: 2%;
+}
+
 .active-panel-container {
     width: 95vw;
-    height: 95vh;
+    height: 10vh;
     background-color: unset;
     margin: auto;
     display: flex;
@@ -31,40 +42,22 @@ html, body {
     background-color: unset;
     position: absolute;
     border-radius: 50%;
-    height: 10%;
+    height: 14%; /* This will be overridden by JS for better responsiveness */
 }
 
 .circle {
-    border: 3px solid black;
     z-index: 10;
 }
 
 #sticker {
     z-index: 20;
+    max-width: 15%; /* Limit maximum width on larger screens */
+    max-height: 15%; /* Limit maximum height on larger screens */
 }
 
 @media only screen and (max-width: 600px) {
-    .circle, .sticker {
-        height: 5%;
+    .sticker {
+        max-width: 20%; /* Increase the maximum width on mobile */
+        max-height: 20%; /* Increase the maximum height on mobile */
     }
-}
-
-.draggable {
-    position: absolute;
-    cursor: grab;
-    user-select: none;
-}
-
-.draggable.dragging {
-    cursor: grabbing;
-}
-
-.sticky-footer {
-    position: sticky;
-    bottom: 0;
-    background-color: #333; /* Footer background color */
-    color: white; /* Text color */
-    text-align: center; /* Center the text */
-    padding: 10px 0; /* Padding for the footer */
-    height: 60px; /* Fixed height for the footer */
 }

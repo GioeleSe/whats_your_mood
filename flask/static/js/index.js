@@ -22,15 +22,21 @@ function placeNumbers() {
     const numbers = generateRandomNumbers(10, panel); // Generate random positions for 10 circles
     let index = 1;
 
+    // Set circle size based on viewport width
+    const sizeRatio = Math.min(window.innerWidth, window.innerHeight) / 12; // Adjust this ratio as needed
+
     numbers.forEach(number => {
         const newCircle = document.createElement('canvas');
-        newCircle.classList.add('circle'); // Add a class for styling if needed
+        newCircle.classList.add('circle');
 
         // Set the dimensions of the canvas
-        newCircle.width = number.sideLength; // Set the width to the circle's diameter
-        newCircle.height = number.sideLength; // Set the height to the circle's diameter
-
+        newCircle.width = sizeRatio * window.devicePixelRatio; // High resolution width
+        newCircle.height = sizeRatio * window.devicePixelRatio; // High resolution height
+        newCircle.style.width = `${sizeRatio}px`; // CSS width for normal display
+        newCircle.style.height = `${sizeRatio}px`; // CSS height for normal display
+        
         const ctx = newCircle.getContext('2d');
+        ctx.scale(window.devicePixelRatio, window.devicePixelRatio); // Scale the context for better clarity
 
         // Set position of the canvas
         newCircle.style.position = 'absolute'; // Ensure it's positioned absolutely
@@ -42,7 +48,7 @@ function placeNumbers() {
         ctx.strokeStyle = 'black'; // Set stroke color
         ctx.lineWidth = 2; // Set stroke width
         ctx.beginPath();
-        ctx.arc(number.sideLength / 2, number.sideLength / 2, (number.sideLength / 2) - 2, 0, Math.PI * 2);
+        ctx.arc(sizeRatio / 2, sizeRatio / 2, (sizeRatio / 2) - 2, 0, Math.PI * 2);
         ctx.fill(); // Fill the circle
         ctx.stroke(); // Draw the outline of the circle
 
@@ -50,11 +56,11 @@ function placeNumbers() {
         ctx.fillStyle = 'black'; // Set text color
         ctx.textAlign = 'center'; // Center the text horizontally
         ctx.textBaseline = 'middle'; // Center the text vertically
-        ctx.font = '20px Arial'; // Set the font size and family
+        const fontSize = (sizeRatio / 5) * window.devicePixelRatio;
+        ctx.font = `${fontSize}px Arial`; // Set the font size and family
 
         // Draw the index number in the center of the circle
-        ctx.fillText(`${index}`, number.sideLength / 2, number.sideLength / 2); // Ensure to draw the text after setting the font
-        console.debug("Text filled:", index); // Debugging message
+        ctx.fillText(`${index}`, sizeRatio / 2, sizeRatio / 2); // Ensure to draw the text after setting the font
 
         // Append the canvas to the panel
         panel.appendChild(newCircle);
@@ -68,83 +74,82 @@ function placeNumbers() {
     }
 }
 
-// Redraw circles on window resize
+
+function drawCircle(ctx, sideLength, index) {
+    ctx.fillStyle = 'lightblue';
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(sideLength / 2, sideLength / 2, (sideLength / 2) - 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Text in the center
+    ctx.fillStyle = 'black';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `${(sideLength / 3) * window.devicePixelRatio}px Arial`;
+    ctx.fillText(`${index}`, sideLength / 2, sideLength / 2);
+}
+
+// Redraw circles on window resize (debounced)
 function redrawCircles() {
     const panel = document.getElementById('active-panel');
     const existingCircles = document.querySelectorAll('.circle');
-    
-    // Redraw existing circles
+
     existingCircles.forEach((circle, index) => {
         const ctx = circle.getContext('2d');
-        const sideLength = panel.clientWidth / 12; // Calculate new size based on panel width
-
-        circle.width = sideLength; // Set new width
-        circle.height = sideLength; // Set new height
-
-        // Draw the circle again
-        ctx.fillStyle = 'lightblue'; // Set fill color for the circle
-        ctx.strokeStyle = 'black'; // Set stroke color
-        ctx.lineWidth = 2; // Set stroke width
-        ctx.beginPath();
-        ctx.arc(sideLength / 2, sideLength / 2, (sideLength / 2) - 2, 0, Math.PI * 2);
-        ctx.fill(); // Fill the circle
-        ctx.stroke(); // Draw the outline of the circle
-
-        // Set text properties
-        ctx.fillStyle = 'black'; // Set text color
-        ctx.textAlign = 'center'; // Center the text horizontally
-        ctx.textBaseline = 'middle'; // Center the text vertically
-        ctx.font = '20px Arial'; // Set the font size and family
-
-        // Redraw the index number in the center of the circle
-        ctx.fillText(`${index + 1}`, sideLength / 2, sideLength / 2); // Index is +1 to match number placement
+        const sideLength = panel.clientWidth / 10;
+        circle.width = sideLength;
+        circle.height = sideLength;
+        drawCircle(ctx, sideLength, index + 1);
     });
 }
 
-// Generate an array of random numbers with positions
+// Generate random positions with retries
 function generateRandomNumbers(count, panel) {
-    const { width: panelWidth, height: panelHeight, left: panelLeft, top: panelTop } = panel.getBoundingClientRect();
-    const sideLength = panelWidth / 12; // Set the circle's diameter based on panel width
+    const panelRect = panel.getBoundingClientRect();
+    const sideLength = panelRect.width / 10;
     const radius = sideLength / 2;
     const numbers = [];
+    let retries = 0;
 
-    while (numbers.length < count) {
-        // Generate random position within bounds, accounting for the radius and offset
-        const x = panelLeft + radius + Math.random() * (panelWidth - 2 * (radius + sideLength * 0.1));
-        const y = panelTop + radius + Math.random() * (panelHeight - 2 * (radius + sideLength * 0.1));
+    while (numbers.length < count && retries < 100) {
+        const x = radius + Math.random() * (panelRect.width - 2 * radius);
+        const y = radius + Math.random() * (panelRect.height - 2 * radius);
+        const position = [x, y];
 
-        const globalPosition = [x, y];
-
-        // Ensure the new circle doesn't overlap with others and stays within boundaries
-        if (isPositionValid(globalPosition, numbers, sideLength, panelWidth, panelHeight)) {
-            const value = numbers.length + 1;
-            numbers.push({ position: globalPosition, sideLength, value });
+        if (isPositionValid(position, numbers, sideLength, panelRect.width, panelRect.height)) {
+            const value = numbers.length+1;
+            numbers.push({ position, sideLength, value });
+        } else {
+            retries++;
         }
+    }
+
+    if (numbers.length < count) {
+        console.warn("Not enough space for all circles; fewer were placed.");
     }
 
     return numbers;
 }
 
-// Check if the generated position does not overlap with already placed circles
-function isPositionValid(position, placedNumbers, sideLength, panelWidth, panelHeight) {
-    const offset = sideLength;// * 0.1; // 10% offset
-    const radius = sideLength / 2;
+// Validate that positions do not overlap
+function isPositionValid(position, placedNumbers, sideLength, panelWidth, panelHeight) {    
     const [x, y] = position;
 
-    // Check that the circle is fully within the panel boundaries, accounting for offset
-    if (x - radius - offset < 0 || x + radius + offset > panelWidth ||
-        y - radius - offset < 0 || y + radius + offset > panelHeight) {
+    // Boundary check
+    if (x - sideLength < 0 || x + sideLength > panelWidth || y - sideLength < 0 || y + sideLength > panelHeight) {
         return false;
     }
 
-    // Check for overlap with a buffer offset between each placed circle
+    // Overlap check
     return placedNumbers.every(placedCircle => {
         const [placedX, placedY] = placedCircle.position;
-        const distance = Math.sqrt(Math.pow(placedX - x, 2) + Math.pow(placedY - y, 2));
-        return distance >= sideLength + offset; // Diameter plus offset to avoid overlap
+        const distance = Math.hypot(placedX - x, placedY - y);
+        return distance >= sideLength;
     });
 }
-
 
 // Pick a random sticker from the folder ./stickers/, generate a random position and place it
 function placeSticker() {
@@ -153,7 +158,7 @@ function placeSticker() {
 
     try {
         const numbers = JSON.parse(sessionStorage.getItem('numbers')) || [];
-        const sideLength = width / 12;
+        const sideLength = width / 7;
         const position = generateValidStickerPosition(numbers, sideLength, width, height);
 
         const newSticker = createStickerElement(position);
@@ -163,9 +168,11 @@ function placeSticker() {
         
         // Make sticker draggable and add event listeners
         const boxElement = document.getElementById('active-panel');
-        makeDraggable(newSticker, boxElement);
-        newSticker.addEventListener('dblclick', fetchSelected);
         
+        makeDraggable(newSticker, boxElement);
+        
+        newSticker.addEventListener('dblclick', fetchSelected);
+        newSticker.addEventListener('touchend', checkDoubleTap);
     } catch (err) {
         console.error("Error while placing the sticker:", err);
     }
@@ -188,14 +195,16 @@ function createStickerElement(position) {
     const newSticker = document.createElement('img');
     newSticker.classList.add('sticker', 'draggable');
     newSticker.id = 'sticker';
-
     newSticker.style.left = `${position[0]}px`;
     newSticker.style.top = `${position[1]}px`;
 
+    // Set sticker size based on viewport width
+    const sizeRatio = Math.min(window.innerWidth, window.innerHeight) / 10; // Adjust this ratio as needed
+    newSticker.style.width = `${sizeRatio}px`;
+    newSticker.style.height = `${sizeRatio}px`;
+    
     const imgPath = `static/stickers/${Math.floor(Math.random() * 10)}.jpg`;
     newSticker.setAttribute('src', imgPath);
-
-
     return newSticker;
 }
 
@@ -216,44 +225,47 @@ function checkDoubleTap(ev) {
     fetchSelected(); // on recognized double-tap actions
 }
 
-// Recognize the selected number according to the sticker position
+// Find selected number
 function fetchSelected() {
-    // alert('Attempting to get the selected number');
-
-    // Get the panel and its position
-    const panel = document.getElementById('active-panel'); // Replace 'panel' with your panel's actual ID
+    const panel = document.getElementById('active-panel');
     const panelRect = panel.getBoundingClientRect();
 
-    // Get the sticker and calculate its center relative to the panel
     const sticker = document.getElementById('sticker');
     const stickerRect = sticker.getBoundingClientRect();
-    const stickerCenterX = stickerRect.left + stickerRect.width / 2 - panelRect.left;
-    const stickerCenterY = stickerRect.top + stickerRect.height / 2 - panelRect.top;
+    const centerX = stickerRect.left + stickerRect.width / 2 - panelRect.left;
+    const centerY = stickerRect.top + stickerRect.height / 2 - panelRect.top;
 
-    // Get numbers from session storage and initialize variables
     const numbers = JSON.parse(sessionStorage.getItem('numbers'));
-    const numWidth = numbers[0].sideLength;
-    let found = false;
-    let i = 0;
-    // Check each number's position to see if it contains the sticker's center
-    for (; i < numbers.length; i++) {
-        const [numX, numY] = numbers[i].position;
+    const halfNumWidth = (numbers[0].sideLength)/2;
+    const selectedNumber = (numbers).find(function(num){
+        const numCenterX = num.position[0]+halfNumWidth;
+        const numCenterY = num.position[1]+halfNumWidth;
+                // Debugging alerts to confirm position calculations
+        console.log(`Testing num: ${num.value}, numCenterX: ${numCenterX}, numCenterY: ${numCenterY}`);
 
-        // Determine if sticker center is within the number's bounds
-        if (stickerCenterX >= numX && stickerCenterX <= numX + numWidth &&
-            stickerCenterY >= numY && stickerCenterY <= numY + numWidth) {
-            console.log(`Found number: ${numbers[i].value}`);
-            found = true;
-            break;
-        }
-    }
-
-    if (!found) {
-        alert('No numbers selected');
+        // Checking if the center of the sticker is within the bounds of the number's circle
+        return (
+            Math.abs(centerX - numCenterX) <= halfNumWidth &&
+            Math.abs(centerY - numCenterY) <= halfNumWidth
+        );
+    });
+    if (selectedNumber && selectedNumber.value){
+        alert(`Will send the selected number (${selectedNumber.value})`);
+        sendNumber(parseInt(selectedNumber.value));
     }else{
-        alert(`Will send number ${numbers[i].value}`);
+        alert('No numbers selected');
     }
 }
 
 // Send selected number to Telegram Bot ''
-function sendNumber(number) {}
+function sendNumber(number) {
+    const apiBotEndpoint = `/api/sendBot/`;
+    
+    fetch(apiBotEndpoint, {
+        method: "POST",
+        headers: {'Content-Type': 'application/json'}, 
+        body: JSON.stringify({'number':number, 'sticker':document.getElementById('sticker').getAttribute('src')})
+    }).then(res => {
+        console.log("Request complete! response:", res);
+    });
+}
