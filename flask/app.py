@@ -1,14 +1,9 @@
 import os, requests, json
 from datetime import datetime
 from flask import Flask, request, render_template, send_from_directory
+from config import bot
 
 app = Flask(__name__)
-bot = {
-    "TOKEN": "",
-    "ALLOWED": [""],                                     # allowed clients to get messages from
-    "CHATID": "",
-}
-
 
 @app.route('/', methods=['GET'])
 def index():
@@ -22,7 +17,7 @@ def sendBot():
         # Extract the number and sticker from the JSON request body
         value = request.json['number']
         
-        if not isinstance(value, int):
+        if not isinstance(value, int) or value < 0 or value > 10:
             print('number key is not an integer')
             return '400 - number key is not an integer', 400
     except KeyError:
@@ -33,7 +28,7 @@ def sendBot():
     user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
 
     # Emoji to represent mood intensity (darker to lighter moods)
-    mood_emoji = ["😢", "😟", "🙁", "😐", "🙂", "😊", "😀", "😄", "😁", "😆"][value]
+    mood_emoji = ["😢", "😟", "🙁", "😐", "🙂", "😊", "😀", "😄", "😁", "😆"][(value-1)]
 
     # Create the message text
     date_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")

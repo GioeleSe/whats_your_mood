@@ -11,16 +11,9 @@ html, body {
     padding: 1%;
     min-height: 100%;
 }
-.header{
-    min-height: 10vh;
-    background-color: rgb(144, 144, 144);
-    text-align: center;
-    padding: 2%;
-}
-
 .active-panel-container {
     width: 95vw;
-    height: 10vh;
+    height: 90vh;
     background-color: unset;
     margin: auto;
     display: flex;
@@ -42,7 +35,7 @@ html, body {
     background-color: unset;
     position: absolute;
     border-radius: 50%;
-    height: 14%; /* This will be overridden by JS for better responsiveness */
+    height: 10%; /* This will be overridden by JS for better responsiveness */
 }
 
 .circle {
@@ -51,13 +44,9 @@ html, body {
 
 #sticker {
     z-index: 20;
-    max-width: 15%; /* Limit maximum width on larger screens */
-    max-height: 15%; /* Limit maximum height on larger screens */
+    max-width: 20%; /* Limit maximum width on larger screens */
+    max-height: 20%; /* Limit maximum height on larger screens */
 }
 
 @media only screen and (max-width: 600px) {
-    .sticker {
-        max-width: 20%; /* Increase the maximum width on mobile */
-        max-height: 20%; /* Increase the maximum height on mobile */
-    }
 }
