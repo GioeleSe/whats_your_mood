@@ -1,13 +1,36 @@
-import os, requests, json
+import os
+import random
+import requests
 from datetime import datetime
 from flask import Flask, request, render_template, send_from_directory
-from config import bot
 
+import config
+
+bot = config.bot
 app = Flask(__name__)
+
+available_indexes = [
+    'index_0.html',
+    'index_1.html',
+]
+last_index = 'index_1.html'
+
 
 @app.route('/', methods=['GET'])
 def index():
-    return render_template('index.html')
+    global last_index
+    try:
+        # Find the position of the last used index and get the next one in sequence
+        current_pos = available_indexes.index(last_index)
+        next_pos = (current_pos + 1) % len(available_indexes)  # Use modulo for wrap-around
+        new_index = available_indexes[next_pos]
+    except ValueError:
+        # Fallback if last_index isn't found
+        new_index = available_indexes[0]
+
+    # Update the last used index
+    last_index = new_index
+    return render_template(new_index)
 
 @app.route('/api/sendBot/', methods=['POST'])
 def sendBot():
@@ -67,4 +90,4 @@ def favicon():
                                'favicon.ico', mimetype='image/x-icon')
 
 if __name__ == "__main__":
-    app.run(port=3001, debug=True)
+    app.run(host='0.0.0.0')
